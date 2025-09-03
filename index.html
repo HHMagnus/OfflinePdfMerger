@@ -5,11 +5,58 @@
     <title>hello-wasm example</title>
   </head>
   <body>
+    <input type="file" id="fileInput1" accept=".pdf" />
+    <input type="file" id="fileInput2" accept=".pdf" />
     <script type="module">
-      import init, { greet } from "./pkg/hello_wasm.js";
+      import init, { merge_exposed } from "./pkg/PdfMerge2.js";
+
+      let file1Data = null;
+      let file2Data = null;
+
+      function tryMerge() {
+        if (file1Data && file2Data) {
+			alert("doing");
+          // Assume merge_exposed returns Uint8Array
+          const mergedPdf = merge_exposed([file1Data, file2Data]);
+          const blob = new Blob([mergedPdf], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+
+          // Create a temporary link and trigger download
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'merged.pdf';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+		  alert("done");
+        }
+      }
 
       init().then(() => {
-        greet("WebAssembly");
+        document.getElementById('fileInput1').addEventListener('change', (event) => {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              file1Data = new Uint8Array(e.target.result);
+              tryMerge();
+            };
+            reader.readAsArrayBuffer(file);
+          }
+        });
+
+        document.getElementById('fileInput2').addEventListener('change', (event) => {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              file2Data = new Uint8Array(e.target.result);
+              tryMerge();
+            };
+            reader.readAsArrayBuffer(file);
+          }
+        });
       });
     </script>
   </body>
