@@ -3,5 +3,10 @@ name = "PdfMerge2"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+crate-type = ["cdylib"]
+
 [dependencies]
+getrandom = { version = "0.3.3", features = ["wasm_js"] }
 lopdf = "0.38.0"
+wasm-bindgen = "0.2.100"

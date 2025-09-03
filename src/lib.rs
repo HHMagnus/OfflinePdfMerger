@@ -1,4 +1,5 @@
 use lopdf::dictionary;
+use wasm_bindgen::prelude::wasm_bindgen;
 
 use std::collections::BTreeMap;
 
@@ -215,6 +216,11 @@ fn merge(documents: Vec<Document>) -> std::io::Result<Document> {
     document.compress();
 
 	Ok(document)
+}
+
+#[wasm_bindgen]
+pub fn merge_exposed() {
+	
 }
 
 fn main() -> std::io::Result<()> {
