@@ -1,5 +1,7 @@
 use lopdf::dictionary;
 use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::JsValue;
+use js_sys::Uint8Array;
 
 use std::collections::BTreeMap;
 
@@ -219,24 +221,17 @@ fn merge(documents: Vec<Document>) -> std::io::Result<Document> {
 }
 
 #[wasm_bindgen]
-pub fn merge_exposed() {
-	
-}
+pub fn merge_exposed(pdfs: Vec<Uint8Array>) -> Result<Uint8Array, JsValue>  {
+	let mut documents = Vec::new();
+	for pdf in pdfs.into_iter() {
+		let document = Document::load_mem(&pdf.to_vec()).map_err(|e| JsValue::from_str(&format!("Failed to load PDF: {}", e)))?;
+		documents.push(document);
+	}
 
-fn main() -> std::io::Result<()> {
-    // Generate a stack of Documents to merge.
-    let documents = vec![
-        generate_fake_document(),
-        generate_fake_document(),
-        generate_fake_document(),
-        generate_fake_document(),
-    ];
+	let mut merged = merge(documents).map_err(|e| JsValue::from_str(&format!("Failed to merge PDFs: {}", e)))?;
 
-    let mut document = merge(documents)?;
+    let mut buffer = Vec::new();
+	merged.save_to(&mut buffer).map_err(|e| JsValue::from_str(&format!("Failed to save merged PDF to memory: {}", e)))?;
 
-    // Save the merged PDF.
-    // Store file in current working directory.
-    // Note: Line is excluded when running doc tests
-    document.save("merged.pdf").unwrap();
-    Ok(())
+	Ok(Uint8Array::from(&buffer[..]))
 }
