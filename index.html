@@ -15,7 +15,6 @@
 
       function tryMerge() {
         if (file1Data && file2Data) {
-			alert("doing");
           // Assume merge_exposed returns Uint8Array
           const mergedPdf = merge_exposed([file1Data, file2Data]);
           const blob = new Blob([mergedPdf], { type: 'application/pdf' });
@@ -29,7 +28,6 @@
           a.click();
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
-		  alert("done");
         }
       }
 
