@@ -50,16 +50,8 @@ pub fn generate_fake_document() -> Document {
     doc
 }
 
-fn main() -> std::io::Result<()> {
-    // Generate a stack of Documents to merge.
-    let documents = vec![
-        generate_fake_document(),
-        generate_fake_document(),
-        generate_fake_document(),
-        generate_fake_document(),
-    ];
-
-    // Define a starting `max_id` (will be used as start index for object_ids).
+fn merge(documents: Vec<Document>) -> std::io::Result<Document> {
+	// Define a starting `max_id` (will be used as start index for object_ids).
     let mut max_id = 1;
     let mut pagenum = 1;
     // Collect all Documents Objects grouped by a map
@@ -147,9 +139,7 @@ fn main() -> std::io::Result<()> {
 
     // If no "Pages" object found, abort.
     if pages_object.is_none() {
-        println!("Pages root not found.");
-
-        return Ok(());
+        panic!("Pages root not found.");
     }
 
     // Iterate over all "Page" objects and collect into the parent "Pages" created before
@@ -166,9 +156,7 @@ fn main() -> std::io::Result<()> {
 
     // If no "Catalog" found, abort.
     if catalog_object.is_none() {
-        println!("Catalog root not found.");
-
-        return Ok(());
+        panic!("Catalog root not found.");
     }
 
     let catalog_object = catalog_object.unwrap();
@@ -226,12 +214,23 @@ fn main() -> std::io::Result<()> {
 
     document.compress();
 
+	Ok(document)
+}
+
+fn main() -> std::io::Result<()> {
+    // Generate a stack of Documents to merge.
+    let documents = vec![
+        generate_fake_document(),
+        generate_fake_document(),
+        generate_fake_document(),
+        generate_fake_document(),
+    ];
+
+    let mut document = merge(documents)?;
+
     // Save the merged PDF.
     // Store file in current working directory.
     // Note: Line is excluded when running doc tests
-    if false {
-        document.save("merged.pdf").unwrap();
-    }
-
+    document.save("merged.pdf").unwrap();
     Ok(())
 }
