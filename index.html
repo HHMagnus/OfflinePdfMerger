@@ -31,31 +31,38 @@
           const upBtn = li.querySelector('.up-btn');
           const downBtn = li.querySelector('.down-btn');
           nameSpan.textContent = files[i].name;
-          upBtn.disabled = (i === 0);
-          upBtn.onclick = function() {
-            if (i > 0) {
-              const temp = fileInput._allFiles[i - 1];
-              fileInput._allFiles[i - 1] = fileInput._allFiles[i];
-              fileInput._allFiles[i] = temp;
-              updateFileList(fileInput._allFiles);
-              readFiles(fileInput._allFiles, (datas) => {
-                fileDatas = datas;
-              });
-            }
-          };
-          downBtn.disabled = (i === files.length - 1);
-          downBtn.onclick = function() {
-            if (i < files.length - 1) {
-              const temp = fileInput._allFiles[i + 1];
-              fileInput._allFiles[i + 1] = fileInput._allFiles[i];
-              fileInput._allFiles[i] = temp;
-              updateFileList(fileInput._allFiles);
-              readFiles(fileInput._allFiles, (datas) => {
-                fileDatas = datas;
-              });
-            }
-          };
+          // Store index for later lookup
+          li.dataset.fileIndex = i;
           fileList.appendChild(li);
+        }
+        // Add event listeners and update button states
+        const lis = Array.from(fileList.children);
+        lis.forEach((li, idx) => {
+          const upBtn = li.querySelector('.up-btn');
+          const downBtn = li.querySelector('.down-btn');
+          upBtn.disabled = (idx === 0);
+          downBtn.disabled = (idx === lis.length - 1);
+          upBtn.onclick = function() {
+            if (li.previousElementSibling) {
+              fileList.insertBefore(li, li.previousElementSibling);
+              updateButtonStates();
+            }
+          };
+          downBtn.onclick = function() {
+            if (li.nextElementSibling) {
+              fileList.insertBefore(li.nextElementSibling, li);
+              updateButtonStates();
+            }
+          };
+        });
+        function updateButtonStates() {
+          const lis = Array.from(fileList.children);
+          lis.forEach((li, idx) => {
+            const upBtn = li.querySelector('.up-btn');
+            const downBtn = li.querySelector('.down-btn');
+            upBtn.disabled = (idx === 0);
+            downBtn.disabled = (idx === lis.length - 1);
+          });
         }
       }
 
@@ -76,16 +83,21 @@
       }
 
       function tryMerge() {
-        if (fileDatas.length < 2) {
+        // Get the current DOM order
+        const fileList = document.getElementById('fileList');
+        const lis = Array.from(fileList.children);
+        if (lis.length < 2) {
           alert('Please add at least two PDF files.');
           return;
         }
-        // Assume merge_exposed returns Uint8Array
-        const mergedPdf = merge_exposed(fileDatas);
+        // Get the fileDatas in the DOM order
+        const orderedDatas = lis.map(li => {
+          const idx = parseInt(li.dataset.fileIndex);
+          return fileDatas[idx];
+        });
+        const mergedPdf = merge_exposed(orderedDatas);
         const blob = new Blob([mergedPdf], { type: 'application/pdf' });
         const url = URL.createObjectURL(blob);
-
-        // Create a temporary link and trigger download
         const a = document.createElement('a');
         a.href = url;
         a.download = 'merged.pdf';
