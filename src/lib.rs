@@ -1,12 +1,10 @@
-use lopdf::dictionary;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::JsValue;
 use js_sys::Uint8Array;
 
 use std::collections::BTreeMap;
 
-use lopdf::content::{Content, Operation};
-use lopdf::{Document, Object, ObjectId, Stream, Bookmark};
+use lopdf::{Document, Object, ObjectId, Bookmark};
 
 fn merge(documents: Vec<Document>) -> std::io::Result<Document> {
 	// Define a starting `max_id` (will be used as start index for object_ids).
