@@ -8,51 +8,6 @@ use std::collections::BTreeMap;
 use lopdf::content::{Content, Operation};
 use lopdf::{Document, Object, ObjectId, Stream, Bookmark};
 
-pub fn generate_fake_document() -> Document {
-    let mut doc = Document::with_version("1.5");
-    let pages_id = doc.new_object_id();
-    let font_id = doc.add_object(dictionary! {
-        "Type" => "Font",
-        "Subtype" => "Type1",
-        "BaseFont" => "Courier",
-    });
-    let resources_id = doc.add_object(dictionary! {
-        "Font" => dictionary! {
-            "F1" => font_id,
-        },
-    });
-    let content = Content {
-        operations: vec![
-            Operation::new("BT", vec![]),
-            Operation::new("Tf", vec!["F1".into(), 48.into()]),
-            Operation::new("Td", vec![100.into(), 600.into()]),
-            Operation::new("Tj", vec![Object::string_literal("Hello World!")]),
-            Operation::new("ET", vec![]),
-        ],
-    };
-    let content_id = doc.add_object(Stream::new(dictionary! {}, content.encode().unwrap()));
-    let page_id = doc.add_object(dictionary! {
-        "Type" => "Page",
-        "Parent" => pages_id,
-        "Contents" => content_id,
-        "Resources" => resources_id,
-        "MediaBox" => vec![0.into(), 0.into(), 595.into(), 842.into()],
-    });
-    let pages = dictionary! {
-        "Type" => "Pages",
-        "Kids" => vec![page_id.into()],
-        "Count" => 1,
-    };
-    doc.objects.insert(pages_id, Object::Dictionary(pages));
-    let catalog_id = doc.add_object(dictionary! {
-        "Type" => "Catalog",
-        "Pages" => pages_id,
-    });
-    doc.trailer.set("Root", catalog_id);
-
-    doc
-}
-
 fn merge(documents: Vec<Document>) -> std::io::Result<Document> {
 	// Define a starting `max_id` (will be used as start index for object_ids).
     let mut max_id = 1;
