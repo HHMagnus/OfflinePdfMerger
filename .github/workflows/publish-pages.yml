@@ -14,6 +14,9 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v4
 
+      - name: Install wasm-pack 📦
+        run: cargo install wasm-pack
+
       - name: Build 🔧
         run: |
           cargo build --release
