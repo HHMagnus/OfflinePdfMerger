@@ -3,16 +3,6 @@
 version = 4
 
 [[package]]
-name = "PdfMerge2"
-version = "0.1.0"
-dependencies = [
- "getrandom",
- "js-sys",
- "lopdf",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "adler2"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -497,6 +487,16 @@ name = "once_cell"
 version = "1.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
+
+[[package]]
+name = "pdf_merge2"
+version = "0.1.0"
+dependencies = [
+ "getrandom",
+ "js-sys",
+ "lopdf",
+ "wasm-bindgen",
+]
 
 [[package]]
 name = "portable-atomic"
