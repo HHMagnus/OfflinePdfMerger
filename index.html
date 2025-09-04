@@ -19,6 +19,44 @@
         for (let i = 0; i < files.length; i++) {
           const li = document.createElement('li');
           li.textContent = files[i].name;
+
+          // Add up/down buttons
+          const upBtn = document.createElement('button');
+          upBtn.textContent = '↑';
+          upBtn.style.marginLeft = '8px';
+          upBtn.disabled = (i === 0);
+          upBtn.onclick = function() {
+            if (i > 0) {
+              // Swap files
+              const temp = fileInput._allFiles[i - 1];
+              fileInput._allFiles[i - 1] = fileInput._allFiles[i];
+              fileInput._allFiles[i] = temp;
+              updateFileList(fileInput._allFiles);
+              readFiles(fileInput._allFiles, (datas) => {
+                fileDatas = datas;
+              });
+            }
+          };
+
+          const downBtn = document.createElement('button');
+          downBtn.textContent = '↓';
+          downBtn.style.marginLeft = '4px';
+          downBtn.disabled = (i === files.length - 1);
+          downBtn.onclick = function() {
+            if (i < files.length - 1) {
+              // Swap files
+              const temp = fileInput._allFiles[i + 1];
+              fileInput._allFiles[i + 1] = fileInput._allFiles[i];
+              fileInput._allFiles[i] = temp;
+              updateFileList(fileInput._allFiles);
+              readFiles(fileInput._allFiles, (datas) => {
+                fileDatas = datas;
+              });
+            }
+          };
+
+          li.appendChild(upBtn);
+          li.appendChild(downBtn);
           fileList.appendChild(li);
         }
       }
