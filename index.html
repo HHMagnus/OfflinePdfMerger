@@ -5,13 +5,32 @@
     <title>Merge PDFs privately with WASM</title>
     <style>
     * {
-      font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-family: monospace;
     }
-    
+
     body {
       display: flex;
       flex-direction: column;
       align-items: center;
+    }
+
+    input {
+      border: 2px dashed grey;
+      padding: 8px;
+    }
+
+    input:focus {
+      border: 2px dashed black;
+    }
+
+    .order-btn {
+      background-color: white;
+      border: 1px solid white;
+      margin: 1px;
+    }
+
+    .order-btn:hover {
+      border: 1px solid black;
     }
     </style>
   </head>
