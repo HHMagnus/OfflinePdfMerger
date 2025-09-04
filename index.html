@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <title>Merge PDFs privately with WASM</title>
+    <style>
+    * {
+      font-family: monospace;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    input {
+      border: 2px dashed grey;
+      padding: 8px;
+    }
+
+    input:focus {
+      border: 2px dashed black;
+    }
+
+    .order-btn {
+      background-color: white;
+      border: 1px solid white;
+      margin: 1px;
+    }
+
+    .order-btn:hover {
+      border: 1px solid black;
+    }
+    
+    #mergeBtn {
+      background-color: white;
+      border: 2px solid grey;
+      padding: 5px;
+    }
+
+    #mergeBtn:hover {
+      border: 2px solid black;
+      cursor: pointer;
+    }
+    </style>
+  </head>
+  <body>
+    <h1>Merge PDFs privately with WASM</h1>
+    <input type="file" id="fileInput" accept=".pdf" multiple />
+    <ol id="fileList"></ol>
+    <button id="mergeBtn">Merge PDFs</button>
+    <template id="file-list-item-template">
+      <li>
+        <button class="order-btn up-btn">↑</button>
+        <button class="order-btn down-btn">↓</button>
+        <span class="file-name"></span>
+      </li>
+    </template>
+    <script type="module">
+      import init, { merge_exposed } from "./pkg/pdf_merge2.js";
+
+      let fileDatas = [];
+
+      function updateFileList(files) {
+        const fileList = document.getElementById('fileList');
+        fileList.innerHTML = '';
+        const template = document.getElementById('file-list-item-template');
+        for (let i = 0; i < files.length; i++) {
+          const clone = template.content.cloneNode(true);
+          const li = clone.querySelector('li');
+          const nameSpan = li.querySelector('.file-name');
+          const upBtn = li.querySelector('.up-btn');
+          const downBtn = li.querySelector('.down-btn');
+          nameSpan.textContent = files[i].name;
+          // Store index for later lookup
+          li.dataset.fileIndex = i;
+          fileList.appendChild(li);
+        }
+        // Add event listeners and update button states
+        const lis = Array.from(fileList.children);
+        lis.forEach((li, idx) => {
+          const upBtn = li.querySelector('.up-btn');
+          const downBtn = li.querySelector('.down-btn');
+          upBtn.disabled = (idx === 0);
+          downBtn.disabled = (idx === lis.length - 1);
+          upBtn.onclick = function() {
+            if (li.previousElementSibling) {
+              fileList.insertBefore(li, li.previousElementSibling);
+              updateButtonStates();
+            }
+          };
+          downBtn.onclick = function() {
+            if (li.nextElementSibling) {
+              fileList.insertBefore(li.nextElementSibling, li);
+              updateButtonStates();
+            }
+          };
+        });
+        function updateButtonStates() {
+          const lis = Array.from(fileList.children);
+          lis.forEach((li, idx) => {
+            const upBtn = li.querySelector('.up-btn');
+            const downBtn = li.querySelector('.down-btn');
+            upBtn.disabled = (idx === 0);
+            downBtn.disabled = (idx === lis.length - 1);
+          });
+        }
+      }
+
+      function readFiles(files, callback) {
+        let loaded = 0;
+        let datas = new Array(files.length);
+        for (let i = 0; i < files.length; i++) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            datas[i] = new Uint8Array(e.target.result);
+            loaded++;
+            if (loaded === files.length) {
+              callback(datas);
+            }
+          };
+          reader.readAsArrayBuffer(files[i]);
+        }
+      }
+
+      function tryMerge() {
+        // Get the current DOM order
+        const fileList = document.getElementById('fileList');
+        const lis = Array.from(fileList.children);
+        if (lis.length < 2) {
+          alert('Please add at least two PDF files.');
+          return;
+        }
+        // Get the fileDatas in the DOM order
+        const orderedDatas = lis.map(li => {
+          const idx = parseInt(li.dataset.fileIndex);
+          return fileDatas[idx];
+        });
+        const mergedPdf = merge_exposed(orderedDatas);
+        const blob = new Blob([mergedPdf], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'merged.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      init().then(() => {
+        const fileInput = document.getElementById('fileInput');
+        fileInput.addEventListener('change', (event) => {
+          const newFiles = Array.from(event.target.files);
+          // Append new files, avoiding duplicates by name
+          const existingNames = fileDatas.map((_, i) => fileInput.files[i]?.name).filter(Boolean);
+          let allFiles = [];
+          // Get current files from previous selection
+          if (fileInput._allFiles) {
+            allFiles = fileInput._allFiles.slice();
+          }
+          // Add new files, skipping duplicates
+          newFiles.forEach(f => {
+            if (!allFiles.some(existing => existing.name === f.name && existing.size === f.size)) {
+              allFiles.push(f);
+            }
+          });
+          fileInput._allFiles = allFiles;
+          updateFileList(allFiles);
+          readFiles(allFiles, (datas) => {
+            fileDatas = datas;
+          });
+        });
+
+        document.getElementById('mergeBtn').addEventListener('click', () => {
+          tryMerge();
+        });
+      });
+    </script>
+  </body>
+</html>
