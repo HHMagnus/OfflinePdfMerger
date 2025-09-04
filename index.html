@@ -2,19 +2,20 @@
 <html lang="en-US">
   <head>
     <meta charset="utf-8" />
-    <title>Merge Pdfs privately with wasm</title>
+    <title>Merge PDFs privately with WASM</title>
   </head>
   <body>
-  <input type="file" id="fileInput" accept=".pdf" multiple />
-  <ul id="fileList"></ul>
-  <button id="mergeBtn">Merge PDFs</button>
-  <template id="file-list-item-template">
-    <li>
-      <button class="order-btn up-btn">↑</button>
-      <button class="order-btn down-btn">↓</button>
-      <span class="file-name"></span>
-    </li>
-  </template>
+    <h1>Merge PDFs privately with WASM</h1>
+    <input type="file" id="fileInput" accept=".pdf" multiple />
+    <ul id="fileList"></ul>
+    <button id="mergeBtn">Merge PDFs</button>
+    <template id="file-list-item-template">
+      <li>
+        <button class="order-btn up-btn">↑</button>
+        <button class="order-btn down-btn">↓</button>
+        <span class="file-name"></span>
+      </li>
+    </template>
     <script type="module">
       import init, { merge_exposed } from "./pkg/pdf_merge2.js";
 
