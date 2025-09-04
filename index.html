@@ -8,6 +8,13 @@
   <input type="file" id="fileInput" accept=".pdf" multiple />
   <ul id="fileList"></ul>
   <button id="mergeBtn">Merge PDFs</button>
+  <template id="file-list-item-template">
+    <li>
+      <span class="file-name"></span>
+      <button class="up-btn" style="margin-left:8px">↑</button>
+      <button class="down-btn" style="margin-left:4px">↓</button>
+    </li>
+  </template>
     <script type="module">
       import init, { merge_exposed } from "./pkg/pdf_merge2.js";
 
@@ -16,18 +23,17 @@
       function updateFileList(files) {
         const fileList = document.getElementById('fileList');
         fileList.innerHTML = '';
+        const template = document.getElementById('file-list-item-template');
         for (let i = 0; i < files.length; i++) {
-          const li = document.createElement('li');
-          li.textContent = files[i].name;
-
-          // Add up/down buttons
-          const upBtn = document.createElement('button');
-          upBtn.textContent = '↑';
-          upBtn.style.marginLeft = '8px';
+          const clone = template.content.cloneNode(true);
+          const li = clone.querySelector('li');
+          const nameSpan = li.querySelector('.file-name');
+          const upBtn = li.querySelector('.up-btn');
+          const downBtn = li.querySelector('.down-btn');
+          nameSpan.textContent = files[i].name;
           upBtn.disabled = (i === 0);
           upBtn.onclick = function() {
             if (i > 0) {
-              // Swap files
               const temp = fileInput._allFiles[i - 1];
               fileInput._allFiles[i - 1] = fileInput._allFiles[i];
               fileInput._allFiles[i] = temp;
@@ -37,14 +43,9 @@
               });
             }
           };
-
-          const downBtn = document.createElement('button');
-          downBtn.textContent = '↓';
-          downBtn.style.marginLeft = '4px';
           downBtn.disabled = (i === files.length - 1);
           downBtn.onclick = function() {
             if (i < files.length - 1) {
-              // Swap files
               const temp = fileInput._allFiles[i + 1];
               fileInput._allFiles[i + 1] = fileInput._allFiles[i];
               fileInput._allFiles[i] = temp;
@@ -54,9 +55,6 @@
               });
             }
           };
-
-          li.appendChild(upBtn);
-          li.appendChild(downBtn);
           fileList.appendChild(li);
         }
       }
