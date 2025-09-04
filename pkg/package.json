@@ -1,0 +1,15 @@
+{
+  "name": "pdf_merge2",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "pdf_merge2_bg.wasm",
+    "pdf_merge2.js",
+    "pdf_merge2.d.ts"
+  ],
+  "main": "pdf_merge2.js",
+  "types": "pdf_merge2.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
