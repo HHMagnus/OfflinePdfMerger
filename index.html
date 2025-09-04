@@ -5,55 +5,86 @@
     <title>hello-wasm example</title>
   </head>
   <body>
-    <input type="file" id="fileInput1" accept=".pdf" />
-    <input type="file" id="fileInput2" accept=".pdf" />
+  <input type="file" id="fileInput" accept=".pdf" multiple />
+  <ul id="fileList"></ul>
+  <button id="mergeBtn">Merge PDFs</button>
     <script type="module">
       import init, { merge_exposed } from "./pkg/PdfMerge2.js";
 
-      let file1Data = null;
-      let file2Data = null;
+      let fileDatas = [];
 
-      function tryMerge() {
-        if (file1Data && file2Data) {
-          // Assume merge_exposed returns Uint8Array
-          const mergedPdf = merge_exposed([file1Data, file2Data]);
-          const blob = new Blob([mergedPdf], { type: 'application/pdf' });
-          const url = URL.createObjectURL(blob);
-
-          // Create a temporary link and trigger download
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'merged.pdf';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
+      function updateFileList(files) {
+        const fileList = document.getElementById('fileList');
+        fileList.innerHTML = '';
+        for (let i = 0; i < files.length; i++) {
+          const li = document.createElement('li');
+          li.textContent = files[i].name;
+          fileList.appendChild(li);
         }
       }
 
+      function readFiles(files, callback) {
+        let loaded = 0;
+        let datas = new Array(files.length);
+        for (let i = 0; i < files.length; i++) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            datas[i] = new Uint8Array(e.target.result);
+            loaded++;
+            if (loaded === files.length) {
+              callback(datas);
+            }
+          };
+          reader.readAsArrayBuffer(files[i]);
+        }
+      }
+
+      function tryMerge() {
+        if (fileDatas.length < 2) {
+          alert('Please add at least two PDF files.');
+          return;
+        }
+        // Assume merge_exposed returns Uint8Array
+        const mergedPdf = merge_exposed(fileDatas);
+        const blob = new Blob([mergedPdf], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+
+        // Create a temporary link and trigger download
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'merged.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
       init().then(() => {
-        document.getElementById('fileInput1').addEventListener('change', (event) => {
-          const file = event.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-              file1Data = new Uint8Array(e.target.result);
-              tryMerge();
-            };
-            reader.readAsArrayBuffer(file);
+        const fileInput = document.getElementById('fileInput');
+        fileInput.addEventListener('change', (event) => {
+          const newFiles = Array.from(event.target.files);
+          // Append new files, avoiding duplicates by name
+          const existingNames = fileDatas.map((_, i) => fileInput.files[i]?.name).filter(Boolean);
+          let allFiles = [];
+          // Get current files from previous selection
+          if (fileInput._allFiles) {
+            allFiles = fileInput._allFiles.slice();
           }
+          // Add new files, skipping duplicates
+          newFiles.forEach(f => {
+            if (!allFiles.some(existing => existing.name === f.name && existing.size === f.size)) {
+              allFiles.push(f);
+            }
+          });
+          fileInput._allFiles = allFiles;
+          updateFileList(allFiles);
+          readFiles(allFiles, (datas) => {
+            fileDatas = datas;
+          });
         });
 
-        document.getElementById('fileInput2').addEventListener('change', (event) => {
-          const file = event.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-              file2Data = new Uint8Array(e.target.result);
-              tryMerge();
-            };
-            reader.readAsArrayBuffer(file);
-          }
+        document.getElementById('mergeBtn').addEventListener('click', () => {
+          tryMerge();
         });
       });
     </script>
