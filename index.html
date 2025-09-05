@@ -17,9 +17,11 @@
     input {
       border: 2px dashed grey;
       padding: 8px;
+      min-width: 500px;
+      height: 20vh;
     }
 
-    input:focus {
+    input:hover {
       border: 2px dashed black;
     }
 
@@ -47,22 +49,29 @@
   </head>
   <body>
     <h1>Merge PDFs privately with WASM</h1>
+    <p>Add files to merge:</p>
     <input type="file" id="fileInput" accept=".pdf" multiple />
-    <ol id="fileList"></ol>
-    <button id="mergeBtn">Merge PDFs</button>
-    <template id="file-list-item-template">
-      <li>
-        <button class="order-btn up-btn">↑</button>
-        <button class="order-btn down-btn">↓</button>
-        <span class="file-name"></span>
-      </li>
-    </template>
+    <div id="merge-pdfs-section" style="display:none;">
+      <p>Choose order of pdfs in merged pdf:</p>
+      <ol id="fileList"></ol>
+      <button id="mergeBtn">Merge PDFs together</button>
+      <template id="file-list-item-template">
+        <li>
+          <button class="order-btn up-btn">↑</button>
+          <button class="order-btn down-btn">↓</button>
+          <span class="file-name"></span>
+        </li>
+      </template>
+    </div>
     <script type="module">
       import init, { merge_exposed } from "./pkg/pdf_merge2.js";
 
       let fileDatas = [];
 
       function updateFileList(files) {
+        const mergeSection = document.getElementById('merge-pdfs-section');
+        mergeSection.style.display = 'block';
+
         const fileList = document.getElementById('fileList');
         fileList.innerHTML = '';
         const template = document.getElementById('file-list-item-template');
