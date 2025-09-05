@@ -1,0 +1,3 @@
+- Centralize button for merge
+- Fix files shows up in the middle of the box
+- Centralize the input field
