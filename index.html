@@ -70,6 +70,11 @@
       opacity: 0;       /* invisible but still functional */
       cursor: pointer;
     }
+
+    #merge-pdfs-section {
+      flex-direction: column;
+      align-items: center;
+    }
     </style>
   </head>
   <body>
@@ -99,7 +104,7 @@
 
       function updateFileList(files) {
         const mergeSection = document.getElementById('merge-pdfs-section');
-        mergeSection.style.display = 'block';
+        mergeSection.style.display = 'flex';
 
         const fileList = document.getElementById('fileList');
         fileList.innerHTML = '';

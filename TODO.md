@@ -1,6 +1,6 @@
-- Centralize button for merge
 - Fix the same file not being addable again
 - Remove button for files
 - Make it possible to reset after merge
 - Add progress bar for big merges
 - Better error handling instead of alerts
+- Give a better name for merged file
