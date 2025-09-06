@@ -52,12 +52,45 @@
       border: 2px solid var(--main-draw-color);
       cursor: pointer;
     }
+
+    .drop-area {
+      position: relative;
+      width: 400px;
+      height: 20vh;
+      border: 2px dashed var(--main-border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--main-border-color);
+      text-align: center;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .drop-area:hover {
+      border: 2px dashed var(--main-draw-color);
+      color: var(--main-draw-color);
+    }
+
+    .drop-area input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;       /* invisible but still functional */
+      cursor: pointer;
+    }
     </style>
   </head>
   <body>
     <h1>Merge PDFs privately with WASM</h1>
     <p>Add files to merge:</p>
-    <input type="file" id="fileInput" accept=".pdf" multiple />
+    <div class="drop-area">
+      <input type="file" id="fileInput" accept=".pdf" multiple />
+      <span>Drop files here or click to upload</span>
+    </div>
+    
     <div id="merge-pdfs-section" style="display:none;">
       <p>Choose order of pdfs in merged pdf:</p>
       <ol id="fileList"></ol>
