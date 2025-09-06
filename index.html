@@ -102,7 +102,7 @@
 
       let fileDatas = [];
 
-      function updateFileList(files) {
+      function updateFileList() {
         const mergeSection = document.getElementById('merge-pdfs-section');
         mergeSection.style.display = 'flex';
 
@@ -151,23 +151,7 @@
         }
       }
 
-      function readFiles(files, callback) {
-        let loaded = 0;
-        let datas = new Array(files.length);
-        for (let i = 0; i < files.length; i++) {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            datas[i] = new Uint8Array(e.target.result);
-            loaded++;
-            if (loaded === files.length) {
-              callback(datas);
-            }
-          };
-          reader.readAsArrayBuffer(files[i]);
-        }
-      }
-
-      function tryMerge() {
+      async function tryMerge() {
         // Get the current DOM order
         const fileList = document.getElementById('fileList');
         const lis = Array.from(fileList.children);
@@ -176,10 +160,12 @@
           return;
         }
         // Get the fileDatas in the DOM order
-        const orderedDatas = lis.map(li => {
+        const orderedFileReads = lis.map(li => {
           const idx = parseInt(li.dataset.fileIndex);
-          return fileDatas[idx];
+          return files[idx].arrayBuffer();
         });
+        const orderedDatas = (await Promise.all(orderedFileReads))
+          .map(buff => new Uint8Array(buff));
         const mergedPdf = merge_exposed(orderedDatas);
         const blob = new Blob([mergedPdf], { type: 'application/pdf' });
         const url = URL.createObjectURL(blob);
@@ -192,28 +178,15 @@
         URL.revokeObjectURL(url);
       }
 
+      let files = [];
+
       init().then(() => {
         const fileInput = document.getElementById('fileInput');
         fileInput.addEventListener('change', (event) => {
           const newFiles = Array.from(event.target.files);
-          // Append new files, avoiding duplicates by name
-          const existingNames = fileDatas.map((_, i) => fileInput.files[i]?.name).filter(Boolean);
-          let allFiles = [];
-          // Get current files from previous selection
-          if (fileInput._allFiles) {
-            allFiles = fileInput._allFiles.slice();
-          }
-          // Add new files, skipping duplicates
-          newFiles.forEach(f => {
-            if (!allFiles.some(existing => existing.name === f.name && existing.size === f.size)) {
-              allFiles.push(f);
-            }
-          });
-          fileInput._allFiles = allFiles;
-          updateFileList(allFiles);
-          readFiles(allFiles, (datas) => {
-            fileDatas = datas;
-          });
+          files.push(...newFiles);
+          
+          updateFileList();
 
           fileInput.value = "";
         });

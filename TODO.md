@@ -1,4 +1,4 @@
-- Fix the same file not being addable again
+- Fix html completely rerendered each time
 - Remove button for files
 - Make it possible to reset after merge
 - Add progress bar for big merges
