@@ -21,17 +21,6 @@
       align-items: center;
     }
 
-    input {
-      border: 2px dashed var(--main-border-color);
-      padding: 8px;
-      min-width: 500px;
-      height: 20vh;
-    }
-
-    input:hover {
-      border: 2px dashed var(--main-draw-color);
-    }
-
     .order-btn {
       background-color: var(--main-bg-color);
       border: 1px solid var(--main-bg-color);
@@ -220,6 +209,8 @@
           readFiles(allFiles, (datas) => {
             fileDatas = datas;
           });
+
+          fileInput.value = "";
         });
 
         document.getElementById('mergeBtn').addEventListener('click', () => {
