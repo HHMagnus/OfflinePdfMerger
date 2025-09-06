@@ -160,18 +160,19 @@
           return;
         }
         // Get the fileDatas in the DOM order
-        const orderedFileReads = lis.map(li => {
+        const orderedFiles = lis.map(li => {
           const idx = parseInt(li.dataset.fileIndex);
-          return files[idx].arrayBuffer();
+          return files[idx];
         });
-        const orderedDatas = (await Promise.all(orderedFileReads))
+        const fileName = orderedFiles.map(x => x.name.replace('.pdf', '')).join('_') + '.pdf';
+        const orderedDatas = (await Promise.all(orderedFiles.map(file => file.arrayBuffer())))
           .map(buff => new Uint8Array(buff));
         const mergedPdf = merge_exposed(orderedDatas);
         const blob = new Blob([mergedPdf], { type: 'application/pdf' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'merged.pdf';
+        a.download = fileName;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
