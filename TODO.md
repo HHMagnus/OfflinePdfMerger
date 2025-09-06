@@ -1,3 +1,6 @@
 - Centralize button for merge
-- Fix files shows up in the middle of the box
-- Centralize the input field
+- Fix the same file not being addable again
+- Remove button for files
+- Make it possible to reset after merge
+- Add progress bar for big merges
+- Better error handling instead of alerts
