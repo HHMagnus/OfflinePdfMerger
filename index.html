@@ -9,6 +9,7 @@
       --main-bg-color: light-dark(#eee, #222);
       --main-border-color: light-dark(grey, lightgrey);
       --main-draw-color: light-dark(black, #eee);
+      --main-error-color: light-dark(pink, darkred)
     }
     * {
       font-family: monospace;
@@ -75,6 +76,27 @@
       flex-direction: column;
       align-items: center;
     }
+
+    #error-message {
+      background-color: var(--main-error-color);
+      border: 1px solid var(--main-draw-color);
+      border-radius: 3px;
+      padding: 6px;
+    }
+        
+    @keyframes shake {
+      0%   { transform: translateX(0); }
+      20%  { transform: translateX(2px); }
+      40%  { transform: translateX(-2px); }
+      60%  { transform: translateX(2px); }
+      80%  { transform: translateX(-2px); }
+      100% { transform: translateX(0); }
+    }
+
+    .shake {
+      animation: shake 0.5s ease;
+    }
+
     </style>
   </head>
   <body>
@@ -97,6 +119,30 @@
         </li>
       </template>
     </div>
+
+    <p id="error-message" style="display: none;">
+      Error here
+    </p>
+
+    <script>
+      const errorMessage = document.getElementById("error-message");
+      function showError(error) {
+        errorMessage.innerText = error;
+
+        if (errorMessage.style.display === 'none') {
+          errorMessage.style.display = 'block';
+        } else {
+          errorMessage.classList.remove('shake');
+          errorMessage.offsetWidth;
+          errorMessage.classList.add('shake');
+        }
+      }
+
+      function hideError() {
+        errorMessage.style.display = 'none';
+        errorMessage.classList.remove('shake');
+      }
+      </script>
     <script type="module">
       import init, { merge_exposed } from "./pkg/pdf_merge2.js";
 
@@ -156,7 +202,7 @@
         const fileList = document.getElementById('fileList');
         const lis = Array.from(fileList.children);
         if (lis.length < 2) {
-          alert('Please add at least two PDF files.');
+          showError('Please add at least two PDF files.');
           return;
         }
         // Get the fileDatas in the DOM order
