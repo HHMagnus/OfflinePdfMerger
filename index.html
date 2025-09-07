@@ -116,6 +116,26 @@
       margin-top: 0px
     }
 
+    .loader {
+      width: 32px;
+      height: 32px;
+      border: 5px solid #FFF;
+      border-bottom-color: transparent;
+      border-radius: 50%;
+      display: inline-block;
+      box-sizing: border-box;
+      animation: rotation 1s linear infinite;
+    }
+
+    @keyframes rotation {
+      0% {
+          transform: rotate(0deg);
+      }
+      100% {
+          transform: rotate(360deg);
+      }
+    } 
+
     </style>
   </head>
   <body>
@@ -133,6 +153,7 @@
       </div>
       <ol id="fileList"></ol>
       <button id="mergeBtn" onclick="merge()">Merge PDFs together</button>
+      <span id="loader" class="loader" style="display: none;"></span>
       <template id="file-list-item-template">
         <li>
           <button class="icon-btn up-btn" onclick="moveUp(this)" title="Move up in order">↑</button>
@@ -272,16 +293,31 @@
         URL.revokeObjectURL(url);
       }
 
+      const loader = document.getElementById("loader");
+      const mergeBtn = document.getElementById("mergeBtn");
+      function showLoader() {
+        mergeBtn.style.display = 'none';
+        loader.style.display = 'inline-block';
+      }
+      function hideLoader() {
+        mergeBtn.style.display = 'block';
+        loader.style.display = 'none';
+      }
+
       let workerReady = false;
       worker.onmessage = (event) => {
         const { type, pdf, message, fileName} = event.data;
         if (type === "ready") {
           workerReady = true;
-        } else if (type === "done") {
+          return;
+        }
+
+        if (type === "done") {
           downloadPdf(pdf, fileName);
         } else if (type === "error") {
           showError(message);
         }
+        hideLoader();
       };
 
       async function merge() {
@@ -295,6 +331,8 @@
           showError('Please add at least two PDF files.');
           return;
         }
+
+        showLoader();
 
         const orderedFiles = lis.map(li => li._relatedFile);
         const fileName = orderedFiles.map(x => x.name.replace('.pdf', '')).join('_') + '.pdf';
