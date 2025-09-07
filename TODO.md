@@ -1,3 +1,2 @@
 - Add progress bar for big merges
 - Better error handling instead of alerts
-- Test very long file names
