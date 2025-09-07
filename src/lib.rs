@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 
 use lopdf::{Document, Object, ObjectId, Bookmark};
 
-fn merge(documents: Vec<Document>) -> std::io::Result<Document> {
+fn merge(documents: Vec<Document>) -> Result<Document, String> {
 	// Define a starting `max_id` (will be used as start index for object_ids).
     let mut max_id = 1;
     let mut pagenum = 1;
@@ -95,7 +95,7 @@ fn merge(documents: Vec<Document>) -> std::io::Result<Document> {
 
     // If no "Pages" object found, abort.
     if pages_object.is_none() {
-        panic!("Pages root not found.");
+        return Err("Could not find any pages.".to_string());
     }
 
     // Iterate over all "Page" objects and collect into the parent "Pages" created before
@@ -112,7 +112,7 @@ fn merge(documents: Vec<Document>) -> std::io::Result<Document> {
 
     // If no "Catalog" found, abort.
     if catalog_object.is_none() {
-        panic!("Catalog root not found.");
+        return Err("Could not find catalog root.".to_string());
     }
 
     let catalog_object = catalog_object.unwrap();
@@ -181,7 +181,7 @@ pub fn merge_exposed(pdfs: Vec<Uint8Array>) -> Result<Uint8Array, JsValue>  {
 		documents.push(document);
 	}
 
-	let mut merged = merge(documents).map_err(|e| JsValue::from_str(&format!("Failed to merge PDFs: {}", e)))?;
+	let mut merged = merge(documents).map_err(|e| JsValue::from_str(&e))?;
 
     let mut buffer = Vec::new();
 	merged.save_to(&mut buffer).map_err(|e| JsValue::from_str(&format!("Failed to save merged PDF to memory: {}", e)))?;

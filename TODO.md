@@ -1,2 +1,1 @@
 - Add progress bar for big merges
-- Better error handling instead of alerts
