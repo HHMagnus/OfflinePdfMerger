@@ -1,4 +1,4 @@
-- Remove button for files
 - Make it possible to reset after merge
 - Add progress bar for big merges
 - Better error handling instead of alerts
+- Fix movement of file order broken

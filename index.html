@@ -110,11 +110,12 @@
     <div id="merge-pdfs-section" style="display:none;">
       <p>Choose order of pdfs in merged pdf:</p>
       <ol id="fileList"></ol>
-      <button id="mergeBtn">Merge PDFs together</button>
+      <button id="mergeBtn" onclick="merge()">Merge PDFs together</button>
       <template id="file-list-item-template">
         <li>
           <button class="order-btn up-btn" onclick="moveUp(this)">↑</button>
           <button class="order-btn down-btn" onclick="moveDown(this)">↓</button>
+          <button class="order-btn" onclick="removeBtn(this)">X</button>
           <span class="file-name"></span>
         </li>
       </template>
@@ -142,17 +143,21 @@
         errorMessage.style.display = 'none';
         errorMessage.classList.remove('shake');
       }
-      </script>
+    </script>
     <script type="module">
       import init, { merge_exposed } from "./pkg/pdf_merge2.js";
 
       const template = document.getElementById('file-list-item-template');
+      const mergeSection = document.getElementById('merge-pdfs-section');
 
       let fileDatas = [];
 
       function showMergeSection() {
-        const mergeSection = document.getElementById('merge-pdfs-section');
         mergeSection.style.display = 'flex';
+      }
+      
+      function hideMergeSection() {
+        mergeSection.style.display = 'none';
       }
 
       function updateButtons(li) {
@@ -171,16 +176,39 @@
       }
 
       function moveUp(btn) {
-        const li = btn.parent;
-        const prevElement = li.previousElementSibling;
+        const li = btn.parentElement;
         reorderElements(li, prevElement);
       }
+      window.moveUp = moveUp;
 
       function moveDown(btn) {
-        const li = btn.parent;
+        const li = btn.parentElement;
         const nextElement = li.nextElementSibling;
         reorderElements(nextElement, li);
       }
+      window.moveDown = moveDown;
+
+      function removeBtn(btn) {
+        const li = btn.parentElement;
+        const prevElement = li.previousElementSibling;
+        const nextElement = li.nextElementSibling;
+
+        const parent = li.parentElement;
+
+        parent.removeChild(li);
+
+        if (prevElement) {
+          updateButtons(prevElement);
+        }
+        if (nextElement) {
+          updateButtons(nextElement);
+        }
+
+        if (parent.children.length === 0) {
+          hideMergeSection();
+        }
+      }
+      window.removeBtn = removeBtn;
 
       function addFile(file) {
         showMergeSection();
@@ -211,8 +239,7 @@
         URL.revokeObjectURL(url);
       }
 
-      async function tryMerge() {
-
+      async function merge() {
         const fileList = document.getElementById('fileList');
         const lis = Array.from(fileList.children);
         if (lis.length < 2) {
@@ -228,6 +255,7 @@
 
         downloadPdf(mergedPdf, fileName);
       }
+      window.merge = merge;
 
       init().then(() => {
         const fileInput = document.getElementById('fileInput');
@@ -240,8 +268,6 @@
 
           fileInput.value = "";
         });
-
-        document.getElementById("mergeBtn").addEventListener('click', tryMerge);
       });
     </script>
   </body>
