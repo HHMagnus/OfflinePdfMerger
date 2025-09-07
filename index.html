@@ -97,6 +97,15 @@
       animation: shake 0.5s ease;
     }
 
+    #choose-section {
+      display: flex;
+      margin-top: 1em;
+    }
+
+    #fileList {
+      margin-top: 0px
+    }
+
     </style>
   </head>
   <body>
@@ -108,7 +117,10 @@
     </div>
     
     <div id="merge-pdfs-section" style="display:none;">
-      <p>Choose order of pdfs in merged pdf: <button class="icon-btn" onclick="reset()" title="Remove all pdfs">↺</button></p>
+      <div id="choose-section">
+        <p>Choose order of pdfs in merged pdf: </p>
+        <button class="icon-btn" onclick="reset()" title="Remove all pdfs">↺</button>
+      </div>
       <ol id="fileList"></ol>
       <button id="mergeBtn" onclick="merge()">Merge PDFs together</button>
       <template id="file-list-item-template">

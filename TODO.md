@@ -1,4 +1,5 @@
 - Add progress bar for big merges
 - Better error handling instead of alerts
 - Add a way to inform user of max size limits before merge
-- Fix spacing issue in merge section
+- Fix long names causing weird style
+- Fix naming with long names
