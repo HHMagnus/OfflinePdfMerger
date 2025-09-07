@@ -2,6 +2,10 @@
 <html lang="en-US">
   <head>
     <meta charset="utf-8" />
+    <meta name="description" content="Merge PDF files directly in your browser using WebAssembly (WASM). No uploads, everything stays on your device for privacy.">
+    <meta name="keywords" content="Merge PDF, PDF merger, WebAssembly pdf merger, client-side PDF merge, private PDF merge, secure PDF merge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Magnus Hindborg Hovmann">
     <title>Merge PDFs privately with WASM</title>
     <style>
     :root {
@@ -116,10 +120,39 @@
       margin-top: 0px
     }
 
+    .loader {
+      width: 32px;
+      height: 32px;
+      border: 5px solid #FFF;
+      border-bottom-color: transparent;
+      border-radius: 50%;
+      display: inline-block;
+      box-sizing: border-box;
+      animation: rotation 1s linear infinite;
+    }
+
+    @keyframes rotation {
+      0% {
+          transform: rotate(0deg);
+      }
+      100% {
+          transform: rotate(360deg);
+      }
+    } 
+
+    #features {
+      margin-top: 0px;
+    }
+
     </style>
   </head>
   <body>
     <h1>Merge PDFs privately with WASM</h1>
+    <ul id="features">
+      <li>All processing happens in your browser</li>
+      <li>No cloud, no uploads</li>
+      <li>Everything stays on your device</li>
+    </ul>
     <p>Add files to merge:</p>
     <div class="drop-area">
       <input type="file" id="fileInput" accept=".pdf" multiple />
@@ -133,6 +166,7 @@
       </div>
       <ol id="fileList"></ol>
       <button id="mergeBtn" onclick="merge()">Merge PDFs together</button>
+      <span id="loader" class="loader" style="display: none;"></span>
       <template id="file-list-item-template">
         <li>
           <button class="icon-btn up-btn" onclick="moveUp(this)" title="Move up in order">↑</button>
@@ -167,7 +201,7 @@
       }
     </script>
     <script type="module">
-      import init, { merge_exposed } from "./pkg/pdf_merge2.js";
+      const worker = new Worker("./mergeWorker.js", { type: "module" });
 
       const template = document.getElementById('file-list-item-template');
       const mergeSection = document.getElementById('merge-pdfs-section');
@@ -272,7 +306,38 @@
         URL.revokeObjectURL(url);
       }
 
+      const loader = document.getElementById("loader");
+      const mergeBtn = document.getElementById("mergeBtn");
+      function showLoader() {
+        mergeBtn.style.display = 'none';
+        loader.style.display = 'inline-block';
+      }
+      function hideLoader() {
+        mergeBtn.style.display = 'block';
+        loader.style.display = 'none';
+      }
+
+      let workerReady = false;
+      worker.onmessage = (event) => {
+        const { type, pdf, message, fileName} = event.data;
+        if (type === "ready") {
+          workerReady = true;
+          return;
+        }
+
+        if (type === "done") {
+          downloadPdf(pdf, fileName);
+        } else if (type === "error") {
+          showError(message);
+        }
+        hideLoader();
+      };
+
       async function merge() {
+        if (!workerReady) {
+          showError("Background job spinning up. Please wait a bit longer");
+          return;
+        }
         const fileList = document.getElementById('fileList');
         const lis = Array.from(fileList.children);
         if (lis.length < 2) {
@@ -280,27 +345,27 @@
           return;
         }
 
+        showLoader();
+
         const orderedFiles = lis.map(li => li._relatedFile);
         const fileName = orderedFiles.map(x => x.name.replace('.pdf', '')).join('_') + '.pdf';
         const arrayBuffers = await Promise.all(orderedFiles.map(file => file.arrayBuffer()));
         const uint8Arrays = arrayBuffers .map(buff => new Uint8Array(buff));
-        const mergedPdf = merge_exposed(uint8Arrays);
+        const transferables = uint8Arrays.map(u8 => u8.buffer);
 
-        downloadPdf(mergedPdf, fileName);
+        worker.postMessage({ files: uint8Arrays, fileName }, transferables);
       }
       window.merge = merge;
 
-      init().then(() => {
-        const fileInput = document.getElementById('fileInput');
-        fileInput.addEventListener('change', (event) => {
-          const newFiles = Array.from(event.target.files);
+      const fileInput = document.getElementById('fileInput');
+      fileInput.addEventListener('change', (event) => {
+        const newFiles = Array.from(event.target.files);
           
-          for (const file of newFiles) {
-            addFile(file);
-          }
+        for (const file of newFiles) {
+          addFile(file);
+        }
 
-          fileInput.value = "";
-        });
+        fileInput.value = "";
       });
     </script>
   </body>
