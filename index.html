@@ -22,13 +22,13 @@
       align-items: center;
     }
 
-    .order-btn {
+    .icon-btn {
       background-color: var(--main-bg-color);
       border: 1px solid var(--main-bg-color);
       margin: 1px;
     }
 
-    .order-btn:hover {
+    .icon-btn:hover {
       border: 1px solid var(--main-draw-color);
     }
     
@@ -108,14 +108,14 @@
     </div>
     
     <div id="merge-pdfs-section" style="display:none;">
-      <p>Choose order of pdfs in merged pdf: <button class="order-btn" onclick="reset()" title="Remove all pdfs">↺</button></p>
+      <p>Choose order of pdfs in merged pdf: <button class="icon-btn" onclick="reset()" title="Remove all pdfs">↺</button></p>
       <ol id="fileList"></ol>
       <button id="mergeBtn" onclick="merge()">Merge PDFs together</button>
       <template id="file-list-item-template">
         <li>
-          <button class="order-btn up-btn" onclick="moveUp(this)" title="Move up in order">↑</button>
-          <button class="order-btn down-btn" onclick="moveDown(this)" title="Move down in order">↓</button>
-          <button class="order-btn" onclick="removeBtn(this)" title="Remove from list">⊖</button>
+          <button class="icon-btn up-btn" onclick="moveUp(this)" title="Move up in order">↑</button>
+          <button class="icon-btn down-btn" onclick="moveDown(this)" title="Move down in order">↓</button>
+          <button class="icon-btn" onclick="removeBtn(this)" title="Remove from list">⊖</button>
           <span class="file-name"></span>
         </li>
       </template>
