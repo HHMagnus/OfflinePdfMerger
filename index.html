@@ -155,7 +155,7 @@
       function showMergeSection() {
         mergeSection.style.display = 'flex';
       }
-      
+
       function hideMergeSection() {
         mergeSection.style.display = 'none';
       }
@@ -177,6 +177,7 @@
 
       function moveUp(btn) {
         const li = btn.parentElement;
+        const prevElement = li.previousElementSibling;
         reorderElements(li, prevElement);
       }
       window.moveUp = moveUp;
@@ -225,6 +226,11 @@
 
         fileList.appendChild(li);
         updateButtons(li);
+
+        const previousElement = li.previousElementSibling;
+        if (previousElement) {
+          updateButtons(previousElement);
+        }
       }
 
       function downloadPdf(pdf, fileName) {
