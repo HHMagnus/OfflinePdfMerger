@@ -113,9 +113,9 @@
       <button id="mergeBtn" onclick="merge()">Merge PDFs together</button>
       <template id="file-list-item-template">
         <li>
-          <button class="order-btn up-btn" onclick="moveUp(this)">↑</button>
-          <button class="order-btn down-btn" onclick="moveDown(this)">↓</button>
-          <button class="order-btn" onclick="removeBtn(this)">X</button>
+          <button class="order-btn up-btn" onclick="moveUp(this)" title="Move up in order">↑</button>
+          <button class="order-btn down-btn" onclick="moveDown(this)" title="Move down in order">↓</button>
+          <button class="order-btn" onclick="removeBtn(this)" title="Remove from list">⊖</button>
           <span class="file-name"></span>
         </li>
       </template>
