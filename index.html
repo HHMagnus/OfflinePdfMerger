@@ -113,8 +113,8 @@
       <button id="mergeBtn">Merge PDFs together</button>
       <template id="file-list-item-template">
         <li>
-          <button class="order-btn up-btn">↑</button>
-          <button class="order-btn down-btn">↓</button>
+          <button class="order-btn up-btn" onclick="moveUp(this)">↑</button>
+          <button class="order-btn down-btn" onclick="moveDown(this)">↓</button>
           <span class="file-name"></span>
         </li>
       </template>
@@ -146,55 +146,57 @@
     <script type="module">
       import init, { merge_exposed } from "./pkg/pdf_merge2.js";
 
+      const template = document.getElementById('file-list-item-template');
+
       let fileDatas = [];
 
-      function updateFileList() {
+      function showMergeSection() {
         const mergeSection = document.getElementById('merge-pdfs-section');
         mergeSection.style.display = 'flex';
+      }
+
+      function updateButtons(li) {
+        const upBtn = li.querySelector('.up-btn');
+        const downBtn = li.querySelector('.down-btn');
+
+        upBtn.disabled = li.previousElementSibling === null;
+        downBtn.disabled = li.nextElementSibling === null;
+      }
+
+      function reorderElements(first, second) {
+        fileList.insertBefore(first, second);
+
+        updateButtons(first);
+        updateButtons(second);
+      }
+
+      function moveUp(btn) {
+        const li = btn.parent;
+        const prevElement = li.previousElementSibling;
+        reorderElements(li, prevElement);
+      }
+
+      function moveDown(btn) {
+        const li = btn.parent;
+        const nextElement = li.nextElementSibling;
+        reorderElements(nextElement, li);
+      }
+
+      function addFile(file) {
+        showMergeSection();
 
         const fileList = document.getElementById('fileList');
-        fileList.innerHTML = '';
-        const template = document.getElementById('file-list-item-template');
-        for (let i = 0; i < files.length; i++) {
-          const clone = template.content.cloneNode(true);
-          const li = clone.querySelector('li');
-          const nameSpan = li.querySelector('.file-name');
-          const upBtn = li.querySelector('.up-btn');
-          const downBtn = li.querySelector('.down-btn');
-          nameSpan.textContent = files[i].name;
-          // Store index for later lookup
-          li.dataset.fileIndex = i;
-          fileList.appendChild(li);
-        }
-        // Add event listeners and update button states
-        const lis = Array.from(fileList.children);
-        lis.forEach((li, idx) => {
-          const upBtn = li.querySelector('.up-btn');
-          const downBtn = li.querySelector('.down-btn');
-          upBtn.disabled = (idx === 0);
-          downBtn.disabled = (idx === lis.length - 1);
-          upBtn.onclick = function() {
-            if (li.previousElementSibling) {
-              fileList.insertBefore(li, li.previousElementSibling);
-              updateButtonStates();
-            }
-          };
-          downBtn.onclick = function() {
-            if (li.nextElementSibling) {
-              fileList.insertBefore(li.nextElementSibling, li);
-              updateButtonStates();
-            }
-          };
-        });
-        function updateButtonStates() {
-          const lis = Array.from(fileList.children);
-          lis.forEach((li, idx) => {
-            const upBtn = li.querySelector('.up-btn');
-            const downBtn = li.querySelector('.down-btn');
-            upBtn.disabled = (idx === 0);
-            downBtn.disabled = (idx === lis.length - 1);
-          });
-        }
+
+        const clone = template.content.cloneNode(true);
+
+        const li = clone.querySelector('li');
+        li._relatedFile = file;
+
+        const nameSpan = li.querySelector('.file-name');
+        nameSpan.textContent = file.name;
+
+        fileList.appendChild(li);
+        updateButtons(li);
       }
 
       async function tryMerge() {
@@ -206,10 +208,7 @@
           return;
         }
         // Get the fileDatas in the DOM order
-        const orderedFiles = lis.map(li => {
-          const idx = parseInt(li.dataset.fileIndex);
-          return files[idx];
-        });
+        const orderedFiles = lis.map(li => li._relatedFile);
         const fileName = orderedFiles.map(x => x.name.replace('.pdf', '')).join('_') + '.pdf';
         const orderedDatas = (await Promise.all(orderedFiles.map(file => file.arrayBuffer())))
           .map(buff => new Uint8Array(buff));
@@ -225,22 +224,19 @@
         URL.revokeObjectURL(url);
       }
 
-      let files = [];
-
       init().then(() => {
         const fileInput = document.getElementById('fileInput');
         fileInput.addEventListener('change', (event) => {
           const newFiles = Array.from(event.target.files);
-          files.push(...newFiles);
           
-          updateFileList();
+          for (const file of newFiles) {
+            addFile(file);
+          }
 
           fileInput.value = "";
         });
 
-        document.getElementById('mergeBtn').addEventListener('click', () => {
-          tryMerge();
-        });
+        document.getElementById("mergeBtn").addEventListener('click', tryMerge);
       });
     </script>
   </body>
