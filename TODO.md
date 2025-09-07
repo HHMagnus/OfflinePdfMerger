@@ -1,4 +1,4 @@
-- Make it possible to reset after merge
 - Add progress bar for big merges
 - Better error handling instead of alerts
 - Add a way to inform user of max size limits before merge
+- Fix spacing issue in merge section

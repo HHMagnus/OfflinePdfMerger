@@ -108,7 +108,7 @@
     </div>
     
     <div id="merge-pdfs-section" style="display:none;">
-      <p>Choose order of pdfs in merged pdf:</p>
+      <p>Choose order of pdfs in merged pdf: <button class="order-btn" onclick="reset()" title="Remove all pdfs">↺</button></p>
       <ol id="fileList"></ol>
       <button id="mergeBtn" onclick="merge()">Merge PDFs together</button>
       <template id="file-list-item-template">
@@ -211,11 +211,16 @@
       }
       window.removeBtn = removeBtn;
 
+      const fileList = document.getElementById('fileList');
+
+      function reset() {
+        fileList.innerHTML = "";
+        hideMergeSection();
+      }
+      window.reset = reset;
+
       function addFile(file) {
         showMergeSection();
-
-        const fileList = document.getElementById('fileList');
-
         const clone = template.content.cloneNode(true);
 
         const li = clone.querySelector('li');
