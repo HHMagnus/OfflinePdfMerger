@@ -23,6 +23,11 @@ onmessage = async (event) => {
 
     postMessage({ type: "done", pdf: mergedPdf, fileName }, [mergedPdf.buffer]);
   } catch (err) {
-    postMessage({ type: "error", message: err.message });
+    if (err instanceof WebAssembly.RuntimeError) {
+      postMessage({ type: "error", message: "Unexpected WASM exception: " + err.message });
+      console.error(err);
+    } else {
+      postMessage({ type: "error", message: err });
+    }
   }
 };
