@@ -1,6 +1,6 @@
-use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::{prelude::wasm_bindgen, JsCast};
 use wasm_bindgen::JsValue;
-use js_sys::Uint8Array;
+use js_sys::{Reflect, Uint8Array};
 
 use std::collections::BTreeMap;
 
@@ -14,6 +14,8 @@ fn merge(documents: Vec<Document>) -> Result<Document, String> {
     let mut documents_pages = BTreeMap::new();
     let mut documents_objects = BTreeMap::new();
     let mut document = Document::with_version("1.5");
+
+    report_progress("Finding pages and renumbering objects...");
 
     for mut doc in documents {
         let mut first = false;
@@ -46,6 +48,8 @@ fn merge(documents: Vec<Document>) -> Result<Document, String> {
     // "Catalog" and "Pages" are mandatory.
     let mut catalog_object: Option<(ObjectId, Object)> = None;
     let mut pages_object: Option<(ObjectId, Object)> = None;
+
+    report_progress("Processing objects...");
 
     // Process all objects except "Page" type
     for (object_id, object) in documents_objects.iter() {
@@ -97,6 +101,8 @@ fn merge(documents: Vec<Document>) -> Result<Document, String> {
     if pages_object.is_none() {
         return Err("Could not find any pages.".to_string());
     }
+
+    report_progress("Inserting pages...");
 
     // Iterate over all "Page" objects and collect into the parent "Pages" created before
     for (object_id, object) in documents_pages.iter() {
@@ -168,6 +174,8 @@ fn merge(documents: Vec<Document>) -> Result<Document, String> {
         }
     }
 
+    report_progress("Compressing merged PDF...");
+
     document.compress();
 
 	Ok(document)
@@ -176,15 +184,37 @@ fn merge(documents: Vec<Document>) -> Result<Document, String> {
 #[wasm_bindgen]
 pub fn merge_exposed(pdfs: Vec<Uint8Array>) -> Result<Uint8Array, JsValue>  {
 	let mut documents = Vec::new();
-	for pdf in pdfs.into_iter() {
+
+    let size = pdfs.len();
+	for (i, pdf) in pdfs.into_iter().enumerate() {
+        report_progress(&format!("Parsing document {} of {}...", i+1, size));
 		let document = Document::load_mem(&pdf.to_vec()).map_err(|e| JsValue::from_str(&format!("Failed to load PDF: {}", e)))?;
 		documents.push(document);
 	}
+    
+    report_progress("Merging...");
 
 	let mut merged = merge(documents).map_err(|e| JsValue::from_str(&e))?;
 
+    report_progress("Exporting merged PDF...");
     let mut buffer = Vec::new();
 	merged.save_to(&mut buffer).map_err(|e| JsValue::from_str(&format!("Failed to save merged PDF to memory: {}", e)))?;
 
 	Ok(Uint8Array::from(&buffer[..]))
+}
+
+fn report_progress(message: &str) {
+    let global = js_sys::global();
+
+    // Call globalThis.postMessage(msg)
+    let func = js_sys::Reflect::get(&global, &JsValue::from_str("postMessage"))
+        .unwrap()
+        .dyn_into::<js_sys::Function>()
+        .unwrap();
+
+    let obj = js_sys::Object::new();
+    Reflect::set(&obj, &JsValue::from_str("type"), &JsValue::from_str("progress")).unwrap();
+    Reflect::set(&obj, &JsValue::from_str("message"), &JsValue::from_str(message)).unwrap();
+
+    func.call1(&global, &obj).unwrap();
 }
