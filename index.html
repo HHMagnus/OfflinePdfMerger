@@ -131,6 +131,12 @@
       animation: rotation 1s linear infinite;
     }
 
+    #loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
     @keyframes rotation {
       0% {
           transform: rotate(0deg);
@@ -166,7 +172,10 @@
       </div>
       <ol id="fileList"></ol>
       <button id="mergeBtn" onclick="merge()">Merge PDFs together</button>
-      <span id="loader" class="loader" style="display: none;"></span>
+      <div id="loader" style="display: none;">
+        <span class="loader"></span>
+        <p id="progress">Starting...</p>
+      </div>
       <template id="file-list-item-template">
         <li>
           <button class="icon-btn up-btn" onclick="moveUp(this)" title="Move up in order">↑</button>
@@ -313,12 +322,14 @@
       const mergeBtn = document.getElementById("mergeBtn");
       function showLoader() {
         mergeBtn.style.display = 'none';
-        loader.style.display = 'inline-block';
+        loader.style.display = 'flex';
       }
       function hideLoader() {
         mergeBtn.style.display = 'block';
         loader.style.display = 'none';
       }
+
+      const progressText = document.getElementById("progress");
 
       let workerReady = false;
       worker.onmessage = (event) => {
@@ -329,7 +340,7 @@
         }
 
         if (type === "progress") {
-          console.log("Progress:", message);
+          progressText.innerText = message;
           return;
         }
 
