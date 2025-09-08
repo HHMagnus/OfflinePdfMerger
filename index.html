@@ -328,6 +328,11 @@
           return;
         }
 
+        if (type === "progress") {
+          console.log("Progress:", message);
+          return;
+        }
+
         if (type === "done") {
           downloadPdf(pdf, fileName);
         } else if (type === "error") {
