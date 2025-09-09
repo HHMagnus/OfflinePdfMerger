@@ -366,6 +366,7 @@
         }
 
         showLoader();
+        hideError();
 
         const orderedFiles = lis.map(li => li._relatedFile);
         const fileName = orderedFiles.map(x => x.name.replace('.pdf', '')).join('_') + '.pdf';
