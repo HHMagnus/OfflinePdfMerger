@@ -21,10 +21,24 @@
     }
 
     body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, header, footer, main {
       background-color: var(--main-bg-color);
       display: flex;
       flex-direction: column;
       align-items: center;
+    }
+
+    main {
+      flex: 1;
+    }
+
+    footer {
+      padding: 1em;
     }
 
     .icon-btn {
@@ -154,42 +168,51 @@
     </style>
   </head>
   <body>
-    <h1>Offline PDF Merger</h1>
-    <ul id="features">
-      <li>All processing happens in your browser with WebAssembly</li>
-      <li>No cloud, no uploads, no installs, no downloads</li>
-      <li>Everything stays on your device, private and secure</li>
-    </ul>
-    <p>Add files to merge:</p>
-    <div class="drop-area">
-      <input type="file" id="fileInput" aria-label="PDF files to merge" accept=".pdf" multiple />
-      <span>Drop files here or click to upload</span>
-    </div>
-    
-    <div id="merge-pdfs-section" style="display:none;">
-      <div id="choose-section">
-        <p>Choose order of pdfs in merged pdf: </p>
-        <button class="icon-btn" onclick="reset()" title="Remove all pdfs">↺</button>
-      </div>
-      <ol id="fileList"></ol>
-      <button id="mergeBtn" onclick="merge()">Merge PDFs together</button>
-      <div id="loader" style="display: none;">
-        <span class="loader"></span>
-        <p id="progress">Starting...</p>
-      </div>
-      <template id="file-list-item-template">
-        <li>
-          <button class="icon-btn up-btn" onclick="moveUp(this)" title="Move up in order">↑</button>
-          <button class="icon-btn down-btn" onclick="moveDown(this)" title="Move down in order">↓</button>
-          <button class="icon-btn" onclick="removeBtn(this)" title="Remove from list">⊖</button>
-          <span class="file-name"></span>
-        </li>
-      </template>
-    </div>
+    <header>
+      <h1>Offline PDF Merger</h1>
+      <ul id="features">
+        <li>All processing happens in your browser with WebAssembly</li>
+        <li>No cloud, no uploads, no installs, no downloads</li>
+        <li>Everything stays on your device, private and secure</li>
+      </ul>
+    </header>
 
-    <p id="error-message" style="display: none;">
-      Error here
-    </p>
+    <main>
+      <p>Add files to merge:</p>
+      <div class="drop-area">
+        <input type="file" id="fileInput" aria-label="PDF files to merge" accept=".pdf" multiple />
+        <span>Drop files here or click to upload</span>
+      </div>
+      
+      <div id="merge-pdfs-section" style="display:none;">
+        <div id="choose-section">
+          <p>Choose order of pdfs in merged pdf: </p>
+          <button class="icon-btn" onclick="reset()" title="Remove all pdfs">↺</button>
+        </div>
+        <ol id="fileList"></ol>
+        <button id="mergeBtn" onclick="merge()">Merge PDFs together</button>
+        <div id="loader" style="display: none;">
+          <span class="loader"></span>
+          <p id="progress">Starting...</p>
+        </div>
+        <template id="file-list-item-template">
+          <li>
+            <button class="icon-btn up-btn" onclick="moveUp(this)" title="Move up in order">↑</button>
+            <button class="icon-btn down-btn" onclick="moveDown(this)" title="Move down in order">↓</button>
+            <button class="icon-btn" onclick="removeBtn(this)" title="Remove from list">⊖</button>
+            <span class="file-name"></span>
+          </li>
+        </template>
+      </div>
+
+      <p id="error-message" style="display: none;">
+        Error here
+      </p>
+    </main>
+
+    <footer>
+      <a href="https://github.com/HHMagnus/OfflinePdfMerger" target="_blank">Source and Issues on Github</a>
+    </footer>
 
     <script>
       const errorMessage = document.getElementById("error-message");
